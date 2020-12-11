@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "optimizer.h"
 
 int main(int argc, char** argv) {
@@ -9,8 +7,16 @@ int main(int argc, char** argv) {
     std::string filename_in  = argv[1];
     std::string filename_out = argv[2];
 
-    auto data = DataReader::ReadFromFile(filename_in);
+    auto data = ProblemDataReader::ReadFromFile(filename_in);
     AntOptimizer opt(std::move(data));
     opt.Run();
     auto schedule = opt.GetSchedule();
+
+    std::ofstream out(filename_out);
+    for (auto& row : schedule) {
+        for (auto& elem : row) {
+            out << (elem.has_value() ? elem.value() : -1) << " ";
+        }
+        out << std::endl;
+    }
 }

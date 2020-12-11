@@ -4,9 +4,8 @@
 #include <filesystem>
 #include <stdexcept>
 
-ProblemData DataReader::ReadFromStream(std::istream& in) {
+ProblemData ProblemDataReader::ReadFromStream(std::istream& in) {
     ProblemData data;
-
     in >> data.n_teachers >> data.n_students >> data.week_length >> data.day_length;
     if (std::min({data.n_teachers, data.n_students, data.week_length, data.day_length}) <= 0) {
         throw std::domain_error("all principal parameters must be positive");
@@ -51,7 +50,7 @@ ProblemData DataReader::ReadFromStream(std::istream& in) {
     return data;
 }
 
-ProblemData DataReader::ReadFromFile(const std::string &filename) {
+ProblemData ProblemDataReader::ReadFromFile(const std::string &filename) {
     if (!std::filesystem::exists(filename)) {
         throw std::invalid_argument(filename + ": no such file");
     }
@@ -59,7 +58,7 @@ ProblemData DataReader::ReadFromFile(const std::string &filename) {
     return ReadFromStream(in);
 }
 
-void DataReader::StartSection(std::istream& in, const std::string& section_name) {
+void ProblemDataReader::StartSection(std::istream& in, const std::string& section_name) {
     std::string buf;
     in >> buf;
     if (buf != section_name) {

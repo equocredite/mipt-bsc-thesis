@@ -3,7 +3,6 @@
 
 #include "colony.h"
 #include <thread>
-#include <iostream>
 
 class AntOptimizer {
 public:

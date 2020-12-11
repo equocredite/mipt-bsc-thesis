@@ -4,19 +4,19 @@
 AntOptimizer::AntOptimizer(ProblemData&& data, Config config)
         : data_(std::move(data))
         , config_(config)
-        , colonies_(config_.n_colonies, Colony(&data, config_)) {
+        , colonies_(config_.n_colonies, Colony(&data_, config_)) {
 }
 
 void AntOptimizer::Run() {
     for (int64_t iter = 0; iter < config_.n_iterations_aco; ++iter) {
         std::vector<std::thread> threads;
         for (Colony& colony : colonies_) {
-            threads.emplace_back(std::thread(&Colony::MakeIteration, colony));
+            threads.emplace_back(std::thread(&Colony::MakeIteration, std::ref(colony)));
         }
         for (auto& thread : threads) {
             thread.join();
         }
-        if (iter % config_.sync_frequency == 0) {
+        if (config_.sync_frequency != 0 && iter % config_.sync_frequency == 0) {
             SyncColonies();
         }
     }
