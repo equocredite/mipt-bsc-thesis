@@ -6,7 +6,8 @@
 Colony::Colony(const ProblemData* data, Config config)
         : data_(data)
         , config_(config)
-        , visibility_(CalcVisibility()) {
+        , visibility_(CalcVisibility())
+        , local_searcher_(new PairwiseSwapLocalSearcher(reinterpret_cast<const ProblemData*>(&data), config)) {
     InitTrail();
     random_engine_.seed(std::chrono::system_clock::now().time_since_epoch().count());
 }
@@ -96,7 +97,7 @@ void Colony::ApplyLocalTrailDecay(int64_t teacher_id, int64_t student_id, int64_
 }
 
 void Colony::ApplyLocalSearch(Schedule& schedule) {
-    // TODO
+    schedule = local_searcher_->Search(schedule);
 }
 
 void Colony::UpdateTrail() {

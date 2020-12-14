@@ -3,6 +3,8 @@
 
 #include "config.h"
 #include "problem_data.h"
+#include "local_search.h"
+
 #include <random>
 
 class Colony {
@@ -58,6 +60,8 @@ private:
     Matrix3D<double> trail_;
     const Matrix3D<double> visibility_;
     std::default_random_engine random_engine_;
+
+    ILocalSearcher* local_searcher_;
 
     Schedule best_schedule_{};
     double best_quality_{};
