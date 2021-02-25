@@ -1,14 +1,18 @@
-#include "optimizer.h"
+#include "ant_optimizer.h"
 #include <algorithm>
 
-AntOptimizer::AntOptimizer(ProblemData&& data, Config config)
-        : data_(std::move(data))
-        , config_(config)
-        , colonies_(config_.n_colonies, Colony(&data_, config_)) {
+using namespace myaco;
+
+AntOptimizer::AntOptimizer()
+        : AntOptimizer(CreateInitialSchedule()) {
+}
+
+AntOptimizer::AntOptimizer(Schedule&& initial_schedule) {
+
 }
 
 void AntOptimizer::Run() {
-    for (int64_t iter = 0; iter < config_.n_iterations_aco; ++iter) {
+    for (int64_t iter = 1; iter <= config.n_iterations_aco; ++iter) {
         std::vector<std::thread> threads;
         for (Colony& colony : colonies_) {
             threads.emplace_back(std::thread(&Colony::MakeIteration, std::ref(colony)));
@@ -16,7 +20,7 @@ void AntOptimizer::Run() {
         for (auto& thread : threads) {
             thread.join();
         }
-        if (config_.sync_frequency != 0 && iter % config_.sync_frequency == 0) {
+        if (config.sync_frequency != 0 && iter % config.sync_frequency == 0) {
             SyncColonies();
         }
     }
@@ -41,3 +45,10 @@ std::vector<Colony>::iterator AntOptimizer::GetBestColony() {
         return c1.GetQuality() < c2.GetQuality();
     });
 }
+
+Schedule AntOptimizer::CreateInitialSchedule() {
+    // TODO
+    return CreateSchedule(data.n_teachers, data.week_length);
+}
+
+

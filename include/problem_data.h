@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 struct ProblemData {
     inline int64_t GetSlotId(int64_t day_id, int64_t hour_id) const {
@@ -25,10 +26,10 @@ struct ProblemData {
         return (day_id + 1) * day_length;
     }
 
-    int64_t n_teachers;
-    int64_t n_students;
-    int64_t week_length;
-    int64_t day_length;
+    int64_t n_teachers{};
+    int64_t n_students{};
+    int64_t week_length{};
+    int64_t day_length{};
     Matrix2D<int64_t> requirements;
     Matrix2D<int16_t> available;
     Matrix2D<int16_t> convenient;
@@ -42,5 +43,9 @@ public:
 private:
     static void StartSection(std::istream& in, const std::string& section_name);
 };
+
+namespace myaco {
+inline ProblemData data;
+}
 
 #endif //MYACO_PROBLEM_DATA_H

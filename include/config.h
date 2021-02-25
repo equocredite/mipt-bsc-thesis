@@ -6,8 +6,7 @@
 #include <thread>
 
 struct Config {
-    Config() {
-    }
+    Config() noexcept = default;
 
     int64_t n_ants = 30; // per colony
     int64_t n_colonies = std::max(std::thread::hardware_concurrency() - 1, 1U);
@@ -25,5 +24,9 @@ struct Config {
     double simultaneous_assignments_penalty = 5.;
     double requirement_violation_penalty = 5.;
 };
+
+namespace myaco {
+inline const Config config;
+}
 
 #endif //MYACO_CONFIG_H

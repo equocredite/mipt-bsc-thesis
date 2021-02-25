@@ -1,26 +1,15 @@
 #ifndef MYACO_OPTIMIZER_H
 #define MYACO_OPTIMIZER_H
 
-#include "colony.h"
-#include <thread>
+#include "matrix.h"
+#include "problem_data.h"
 
-class AntOptimizer {
+class IOptimizer {
 public:
-    explicit AntOptimizer(ProblemData&& data, Config config = Config());
+    virtual void Run() = 0;
 
-    void Run();
-
-    Schedule GetSchedule();
-
-private:
-    void SyncColonies();
-
-    std::vector<Colony>::iterator GetBestColony();
-
-    const ProblemData data_;
-    const Config config_;
-
-    std::vector<Colony> colonies_;
+    virtual Schedule GetSchedule() = 0;
 };
+
 
 #endif //MYACO_OPTIMIZER_H

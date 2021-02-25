@@ -1,4 +1,5 @@
-#include "optimizer.h"
+#include "ant_optimizer.h"
+#include <iostream>
 
 int main(int argc, char** argv) {
     if (argc != 3) {
@@ -7,8 +8,8 @@ int main(int argc, char** argv) {
     std::string filename_in  = argv[1];
     std::string filename_out = argv[2];
 
-    auto data = ProblemDataReader::ReadFromFile(filename_in);
-    AntOptimizer opt(std::move(data));
+    myaco::data = ProblemDataReader::ReadFromFile(filename_in);
+    AntOptimizer opt;
     opt.Run();
     auto schedule = opt.GetSchedule();
 

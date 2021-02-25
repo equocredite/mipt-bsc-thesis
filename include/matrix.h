@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <optional>
+#include <cstdlib>
 
 template<typename T>
 using Matrix2D = std::vector<std::vector<T>>;

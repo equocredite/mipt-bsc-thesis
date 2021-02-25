@@ -55,6 +55,9 @@ ProblemData ProblemDataReader::ReadFromFile(const std::string &filename) {
         throw std::invalid_argument(filename + ": no such file");
     }
     std::ifstream in(filename);
+    if (!in.good()) {
+        throw std::runtime_error("couldn't open file");
+    }
     return ReadFromStream(in);
 }
 
