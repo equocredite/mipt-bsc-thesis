@@ -13,6 +13,8 @@ public:
 
     void MakeIteration();
 
+    void MakeNIterations(int64_t n);
+
     Schedule GetSchedule() const;
 
     double GetQuality() const;
@@ -32,7 +34,7 @@ private:
 
     void ApplyLocalTrailDecay(int64_t teacher_id, int64_t student_id, int64_t slot_id);
 
-    IOptimizer* GetLocalSearcher(const Schedule& schedule);
+    static IOptimizer* GetLocalSearcher(const Schedule& schedule);
 
     void ApplyLocalSearch(Schedule& schedule);
 

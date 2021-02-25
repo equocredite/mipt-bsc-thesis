@@ -12,7 +12,7 @@ struct Config {
     int64_t n_colonies = std::max(std::thread::hardware_concurrency() - 1, 1U);
     int64_t n_iterations_aco = 100;
     int64_t n_iterations_ls = 100;
-    int64_t sync_frequency = 10;
+    int64_t sync_frequency = n_iterations_aco;
     double evaporation_rate = 0.1;
     double trail_store_factor = 1000;
     double local_decay_rate = 0.1;

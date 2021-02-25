@@ -7,21 +7,24 @@ AntOptimizer::AntOptimizer()
         : AntOptimizer(CreateInitialSchedule()) {
 }
 
-AntOptimizer::AntOptimizer(Schedule&& initial_schedule) {
-
+AntOptimizer::AntOptimizer(Schedule&& initial_schedule)
+        : colonies_(config.n_colonies, Colony(initial_schedule)) {
 }
 
 void AntOptimizer::Run() {
-    for (int64_t iter = 1; iter <= config.n_iterations_aco; ++iter) {
+    for (int64_t iter = 0;;) {
         std::vector<std::thread> threads;
         for (Colony& colony : colonies_) {
-            threads.emplace_back(std::thread(&Colony::MakeIteration, std::ref(colony)));
+            threads.emplace_back(std::thread(&Colony::MakeNIterations, std::ref(colony), config.sync_frequency));
         }
         for (auto& thread : threads) {
             thread.join();
         }
-        if (config.sync_frequency != 0 && iter % config.sync_frequency == 0) {
+        iter += config.sync_frequency;
+        if (iter < config.n_iterations_aco) {
             SyncColonies();
+        } else {
+            break;
         }
     }
 }

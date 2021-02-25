@@ -31,6 +31,12 @@ void Colony::MakeIteration() {
     UpdateTrail();
 }
 
+void Colony::MakeNIterations(int64_t n) {
+    while (n--) {
+        MakeIteration();
+    }
+}
+
 Schedule Colony::GetSchedule() const {
     return best_schedule_;
 }
@@ -141,3 +147,4 @@ std::vector<Schedule>::const_iterator Colony::SelectBestSchedule(const std::vect
 double Colony::CalcScheduleQuality(const Schedule& schedule) {
     return QualityEstimator::Estimate(schedule);
 }
+
