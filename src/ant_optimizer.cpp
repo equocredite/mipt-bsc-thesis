@@ -50,8 +50,24 @@ std::vector<Colony>::iterator AntOptimizer::GetBestColony() {
 }
 
 Schedule AntOptimizer::CreateInitialSchedule() {
-    // TODO
-    return CreateSchedule(data.n_teachers, data.week_length);
+    Schedule schedule = CreateSchedule(data.n_teachers, data.week_length);
+    for (int64_t teacher_id = 0; teacher_id < data.n_teachers; ++teacher_id) {
+        int64_t next_slot = 0;
+        for (int64_t student_id = 0; student_id < data.n_students; ++student_id) {
+            int64_t required = data.requirements[teacher_id][student_id];
+            while (required--) {
+                while (next_slot < data.week_length && !data.available[teacher_id][next_slot]) {
+                    ++next_slot;
+                }
+                if (next_slot == data.week_length) {
+                    throw std::invalid_argument("unsatisfiable: teacher " +
+                                                std::to_string(teacher_id) + " does not have enough slots available");
+                }
+                schedule[teacher_id][next_slot++] = student_id;
+            }
+        }
+    }
+    return schedule;
 }
 
 
