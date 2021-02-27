@@ -69,5 +69,3 @@ Schedule AntOptimizer::CreateInitialSchedule() {
     }
     return schedule;
 }
-
-

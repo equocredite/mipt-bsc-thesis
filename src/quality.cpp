@@ -6,10 +6,11 @@ using namespace myaco;
 double QualityEstimator::Estimate(const Schedule& schedule) {
     return // hard
            config.simultaneous_assignments_penalty * CountSimultaneousAssignmentsForStudents(schedule) +
-           config.requirement_violation_penalty * CountUnsatisfiedRequirements(schedule) +
+           //config.requirement_violation_penalty * CountUnsatisfiedRequirements(schedule) +
            // soft
            config.holes_weight * CountHoles(schedule) +
-           config.inconvenience_weight * CountInconvenientAssignments(schedule);
+           config.inconvenience_weight * CountInconvenientAssignments(schedule) +
+           config.splits_penalty * CountSplits(schedule);
 }
 
 int64_t QualityEstimator::CountSimultaneousAssignmentsForStudents(const Schedule& schedule) {
@@ -79,4 +80,25 @@ int64_t QualityEstimator::CountInconvenientAssignments(const Schedule& schedule)
         }
     }
     return n_inconvenient_assignments;
+}
+
+int64_t QualityEstimator::CountSplits(const Schedule& schedule) {
+    int64_t n_splits = 0;
+    for (int64_t teacher_id = 0; teacher_id < data.n_teachers; ++teacher_id) {
+        for (int64_t student_id = 0; student_id < data.n_students; ++student_id) {
+            for (int64_t day_id = 0; day_id < data.GetNDays(); ++day_id) {
+                int64_t previous = -1;
+                for (int64_t hour_id = 0; hour_id < data.day_length; ++hour_id) {
+                    int64_t slot_id = data.GetSlotId(day_id, hour_id);
+                    if (schedule[teacher_id][slot_id] == student_id) {
+                        if (previous != -1) {
+                            n_splits += slot_id - previous - 1;
+                        }
+                        previous = slot_id;
+                    }
+                }
+            }
+        }
+    }
+    return n_splits;
 }

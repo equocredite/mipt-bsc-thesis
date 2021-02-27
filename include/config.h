@@ -19,10 +19,11 @@ struct Config {
     double initial_trail = 1.;
     double trail_weight = 1.;
     double visibility_weight = 2.;
+    double simultaneous_assignments_penalty = 20.;
+    double requirement_violation_penalty = 20.;
     double holes_weight = 1.;
-    double inconvenience_weight = 1.;
-    double simultaneous_assignments_penalty = 5.;
-    double requirement_violation_penalty = 5.;
+    double inconvenience_weight = 3.;
+    double splits_penalty = 6.;
 };
 
 namespace myaco {
