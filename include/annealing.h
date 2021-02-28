@@ -10,10 +10,13 @@ public:
     void Run() override;
 
 private:
-    double temperature_;
+    bool AcceptMove(double from, double to);
 
-    // best_schedule_ -- inherited
+    std::uniform_real_distribution<double> threshold_gen_{0, 1};
+
+    double temperature_;
     double best_quality_;
+    // best_schedule_ -- inherited
 };
 
 #endif //MYACO_ANNEALING_H
