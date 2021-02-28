@@ -21,7 +21,7 @@ void Annealer::Run() {
             current_schedule = std::move(neighbor);
             current_quality = neighbor_quality;
         }
-        if (best_quality_ < current_quality) {
+        if (best_quality_ > current_quality) {
             best_schedule_ = current_schedule;
             best_quality_ = current_quality;
         }
