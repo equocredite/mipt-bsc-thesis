@@ -1,5 +1,6 @@
 #include "colony.h"
 #include "quality.h"
+#include "annealing.h"
 
 #include <algorithm>
 #include <cmath>
@@ -9,9 +10,9 @@ using namespace myaco;
 
 Colony::Colony(Schedule initial_schedule)
         : best_schedule_(std::move(initial_schedule))
-        , visibility_(CalcVisibility()) {
+        , visibility_(CalcVisibility())
+        , rng_(std::chrono::system_clock::now().time_since_epoch().count()) {
     InitTrail();
-    rng_.seed(std::chrono::system_clock::now().time_since_epoch().count());
 }
 
 void Colony::MakeIteration() {
@@ -108,8 +109,7 @@ void Colony::ApplyLocalTrailDecay(int64_t teacher_id, int64_t student_id, int64_
 }
 
 IOptimizer* Colony::GetLocalSearcher(const Schedule& schedule) {
-    // TODO
-    return nullptr;
+    return new Annealer(schedule);
 }
 
 void Colony::ApplyLocalSearch(Schedule& schedule) {
@@ -117,6 +117,7 @@ void Colony::ApplyLocalSearch(Schedule& schedule) {
     if (local_searcher != nullptr) {
         local_searcher->Run();
         schedule = local_searcher->GetSchedule();
+        delete local_searcher;
     }
 }
 

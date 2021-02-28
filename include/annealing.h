@@ -1,7 +1,7 @@
 #ifndef MYACO_ANNEALING_H
 #define MYACO_ANNEALING_H
 
-#include "local_searcher.h"
+#include "local_search.h"
 
 class Annealer : public LocalSearcher {
 public:

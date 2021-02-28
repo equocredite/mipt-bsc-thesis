@@ -24,7 +24,7 @@ public:
     void SetTrail(Matrix3D<double>);
 
 private:
-    Matrix3D<double> CalcVisibility();
+    static Matrix3D<double> CalcVisibility();
 
     void InitTrail();
 
@@ -36,7 +36,7 @@ private:
 
     static IOptimizer* GetLocalSearcher(const Schedule& schedule);
 
-    void ApplyLocalSearch(Schedule& schedule);
+    static void ApplyLocalSearch(Schedule& schedule);
 
     void UpdateTrail();
 

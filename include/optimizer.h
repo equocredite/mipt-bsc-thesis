@@ -9,6 +9,8 @@ public:
     virtual void Run() = 0;
 
     virtual Schedule GetSchedule() = 0;
+
+    virtual ~IOptimizer() = default;
 };
 
 

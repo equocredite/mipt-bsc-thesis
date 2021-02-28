@@ -10,9 +10,10 @@ AntOptimizer::AntOptimizer()
 AntOptimizer::AntOptimizer(Schedule&& initial_schedule)
         : colonies_(config.n_colonies, Colony(initial_schedule)) {
 }
-
+#include <iostream>
 void AntOptimizer::Run() {
     for (int64_t iter = 0;;) {
+        std::cout << "iter " << iter << std::endl;
         std::vector<std::thread> threads;
         for (Colony& colony : colonies_) {
             threads.emplace_back(std::thread(&Colony::MakeNIterations, std::ref(colony), config.sync_frequency));

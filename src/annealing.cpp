@@ -8,14 +8,14 @@ using namespace myaco;
 Annealer::Annealer(Schedule initial_schedule)
         : LocalSearcher(std::move(initial_schedule))
         , temperature_(config.sa_initial_temperature)
-        , best_quality_(QualityEstimator::Estimate(initial_schedule)) {
+        , best_quality_(QualityEstimator::Estimate(best_schedule_)) {
 }
 
 void Annealer::Run() {
     Schedule current_schedule = best_schedule_;
     double current_quality = best_quality_;
     for (int64_t iter = 0; iter < config.n_iterations_sa; ++iter) {
-        Schedule neighbor = GenerateNeighbor(current_schedule);
+        Schedule neighbor = GenerateNeighbor(current_schedule).first;
         double neighbor_quality = QualityEstimator::Estimate(neighbor);
         if (AcceptMove(current_quality, neighbor_quality)) {
             current_schedule = std::move(neighbor);
