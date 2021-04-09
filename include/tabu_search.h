@@ -2,21 +2,30 @@
 #define MYACO_TABU_SEARCH_H
 
 #include "local_search.h"
-#include <deque>
+#include <set>
 
 class TabuSearcher : public LocalSearcher {
 public:
-    explicit TabuSearcher(Schedule initial_schedule);
+    explicit TabuSearcher(Schedule&& initial_schedule, IPerturbator* perturbator);
 
-    void Run() override;
+    void Run(Timer::fsec max_time, Timer::fsec log_frequency) override;
 
 private:
-    bool IsTabu(Move move) const;
+    struct TabuEntry {
+        Schedule::Move move;
+        mutable int64_t tenure;
 
-    void AddTabu(Move move);
+        bool operator < (const TabuEntry& other) const {
+            return move < other.move;
+        }
+    };
 
-    std::deque<Move> tabus;
-    double best_quality_;
+    bool Tabu(const std::vector<Schedule::Move>& moves) const;
+
+    void AddTabus(const std::vector<Schedule::Move>& moves);
+
+    std::set<TabuEntry> tabus_;
+    // best_schedule_ -- inherited
 };
 
 #endif //MYACO_TABU_SEARCH_H

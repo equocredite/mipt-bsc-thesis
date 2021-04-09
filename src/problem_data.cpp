@@ -4,18 +4,17 @@
 #include <filesystem>
 #include <stdexcept>
 
+using namespace myaco;
+
 ProblemData ProblemDataReader::ReadFromStream(std::istream& in) {
-    ProblemData data;
-    in >> data.n_teachers >> data.n_students >> data.week_length >> data.day_length;
-    if (std::min({data.n_teachers, data.n_students, data.week_length, data.day_length}) <= 0) {
+    in >> data.n_teachers >> data.n_students >> data.n_slots;
+    if (std::min({data.n_teachers, data.n_students, data.n_slots}) <= 0) {
         throw std::domain_error("all principal parameters must be positive");
     }
-    if (data.week_length % data.day_length != 0) {
-        throw std::domain_error("week length should be a multiple of day length");
-    }
 
-    data.requirements = myaco::CreateMatrix2D<int64_t>(data.n_teachers, data.n_students);
-    data.available = data.convenient = myaco::CreateMatrix2D<int16_t>(data.n_teachers, data.week_length);
+    data.requirements = CreateMatrix2D<int64_t>(data.n_teachers, data.n_students);
+    data.teacher_available = CreateMatrix2D<int64_t>(data.n_teachers, data.n_slots);
+    data.student_available = CreateMatrix2D<int64_t>(data.n_students, data.n_slots);
 
     StartSection(in, "requirements");
     for (int64_t i = 0; i < data.n_teachers; ++i) {
@@ -29,20 +28,20 @@ ProblemData ProblemDataReader::ReadFromStream(std::istream& in) {
 
     StartSection(in, "teacher_availability");
     for (int64_t i = 0; i < data.n_teachers; ++i) {
-        for (int64_t k = 0; k < data.week_length; ++k) {
-            in >> data.available[i][k];
-            if (data.available[i][k] != 0 && data.available[i][k] != 1) {
+        for (int64_t k = 0; k < data.n_slots; ++k) {
+            in >> data.teacher_available[i][k];
+            if (data.teacher_available[i][k] != 0 && data.teacher_available[i][k] != 1) {
                 throw std::domain_error("teacher_availability should be a binary matrix");
             }
         }
     }
 
-    StartSection(in, "teacher_convenience");
-    for (int64_t i = 0; i < data.n_teachers; ++i) {
-        for (int64_t k = 0; k < data.week_length; ++k) {
-            in >> data.convenient[i][k];
-            if (data.convenient[i][k] != 0 && data.convenient[i][k] != 1) {
-                throw std::domain_error("teacher_availability should be a binary matrix");
+    StartSection(in, "student_availability");
+    for (int64_t i = 0; i < data.n_students; ++i) {
+        for (int64_t k = 0; k < data.n_slots; ++k) {
+            in >> data.student_available[i][k];
+            if (data.student_available[i][k] != 0 && data.student_available[i][k] != 1) {
+                throw std::domain_error("student_availability should be a binary matrix");
             }
         }
     }
@@ -65,6 +64,6 @@ void ProblemDataReader::StartSection(std::istream& in, const std::string& sectio
     std::string buf;
     in >> buf;
     if (buf != section_name) {
-        throw std::domain_error("wrong format of problem data: could not find section " + section_name);
+        throw std::domain_error("could not find section " + section_name);
     }
 }

@@ -11,7 +11,6 @@ using Matrix2D = std::vector<std::vector<T>>;
 template<typename T>
 using Matrix3D = std::vector<Matrix2D<T>>;
 
-using Schedule = Matrix2D<std::optional<int64_t>>;
 
 namespace myaco {
 
@@ -24,8 +23,6 @@ template<typename T>
 Matrix3D<T> CreateMatrix3D(size_t n, size_t m, size_t k, T value = T()) {
     return Matrix3D<T>(n, CreateMatrix2D<T>(m, k, value));
 }
-
-Schedule CreateSchedule(size_t n, size_t p);
 
 } // myaco
 

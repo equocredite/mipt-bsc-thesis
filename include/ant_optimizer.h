@@ -9,11 +9,11 @@ class AntOptimizer : public IOptimizer {
 public:
     AntOptimizer();
 
-    explicit AntOptimizer(Schedule&& initial_schedule);
+    explicit AntOptimizer(const Schedule& initial_schedule);
 
-    void Run() override;
+    void Run(Timer::fsec max_time, Timer::fsec log_frequency) override;
 
-    Schedule GetSchedule() override;
+    Schedule& GetSchedule() override;
 
 private:
     static Schedule CreateInitialSchedule();
@@ -23,6 +23,8 @@ private:
     std::vector<Colony>::iterator GetBestColony();
 
     std::vector<Colony> colonies_;
+
+    double best_quality_;
 };
 
 #endif //MYACO_ANT_OPTIMIZER_H

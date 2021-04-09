@@ -5,17 +5,16 @@
 
 class Annealer : public LocalSearcher {
 public:
-    explicit Annealer(Schedule initial_schedule);
+    explicit Annealer(Schedule&& initial_schedule, IPerturbator* perturbator);
 
-    void Run() override;
+    void Run(Timer::fsec max_time, Timer::fsec log_frequency) override;
 
 private:
-    bool AcceptMove(double from, double to);
+    bool AcceptableMove(double delta);
 
     std::uniform_real_distribution<double> threshold_gen_{0, 1};
 
     double temperature_;
-    double best_quality_;
     // best_schedule_ -- inherited
 };
 

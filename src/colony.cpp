@@ -1,12 +1,17 @@
 #include "colony.h"
 #include "quality.h"
 #include "annealing.h"
+#include "time_util.h"
 
 #include <algorithm>
 #include <cmath>
 #include <chrono>
 
 using namespace myaco;
+
+Colony::Colony()
+        : Colony(Schedule()) {
+}
 
 Colony::Colony(Schedule initial_schedule)
         : best_schedule_(std::move(initial_schedule))
@@ -15,19 +20,15 @@ Colony::Colony(Schedule initial_schedule)
     InitTrail();
 }
 
-void Colony::MakeIteration() {
-    std::vector<Schedule> schedules(config.n_ants);
-    for (int64_t i = 0; i < config.n_ants; ++i) {
+void Colony::MakeIteration(Timer::fsec max_time = Timer::kInfiniteSeconds) {
+    std::vector<Schedule> schedules(config.aco_n_ants);
+    for (int64_t i = 0; i < config.aco_n_ants; ++i) {
         schedules[i] = RunAnt();
     }
-
     auto iter_best_schedule = SelectBestSchedule(schedules);
-    ApplyLocalSearch(const_cast<Schedule&>(*iter_best_schedule));
-    double iter_best_quality = CalcScheduleQuality(*iter_best_schedule);
-
-    if (best_schedule_.empty() || iter_best_quality < best_quality_) {
-        best_schedule_ = *iter_best_schedule;
-        best_quality_ = iter_best_quality;
+    ApplyLocalSearch(*iter_best_schedule, max_time);
+    if (best_schedule_.GetQuality() > iter_best_schedule->GetQuality()) {
+        best_schedule_ = std::move(*iter_best_schedule);
     }
     UpdateTrail();
 }
@@ -38,12 +39,19 @@ void Colony::MakeNIterations(int64_t n) {
     }
 }
 
-Schedule Colony::GetSchedule() const {
+void Colony::Run(Timer::fsec max_time) {
+    Timer timer(max_time);
+    while (!timer.Expired()) {
+        MakeIteration(timer.TimeLeft());
+    }
+}
+
+Schedule& Colony::GetSchedule() {
     return best_schedule_;
 }
 
 double Colony::GetQuality() const {
-    return best_quality_;
+    return best_schedule_.GetQuality();
 }
 
 Matrix3D<double> Colony::GetTrail() const {
@@ -55,17 +63,20 @@ void Colony::SetTrail(Matrix3D<double> trail) {
 }
 
 void Colony::InitTrail() {
-    trail_ = myaco::CreateMatrix3D(data.n_teachers, data.n_students, data.week_length, config.initial_trail);
+    trail_ = myaco::CreateMatrix3D(data.n_teachers, data.n_students, data.n_slots, config.initial_trail);
 }
 
 Matrix3D<double> Colony::CalcVisibility() {
-    auto visibility = myaco::CreateMatrix3D<double>(data.n_teachers, data.n_students, data.week_length);
+    auto visibility = myaco::CreateMatrix3D<double>(data.n_teachers, data.n_students, data.n_slots);
     for (int64_t teacher_id = 0; teacher_id < data.n_teachers; ++teacher_id) {
         for (int64_t student_id = 0; student_id < data.n_students; ++student_id) {
-            for (int64_t slot_id = 0; slot_id < data.week_length; ++slot_id) {
-                visibility[teacher_id][student_id][slot_id] = static_cast<double>(data.available[teacher_id][slot_id])
-                                                            + static_cast<double>(data.convenient[teacher_id][slot_id]) / 10.
-                                                            + static_cast<double>(data.requirements[teacher_id][student_id]) / data.week_length;
+            if (data.requirements[teacher_id][student_id] == 0) {
+                continue;
+            }
+            for (int64_t slot_id = 0; slot_id < data.n_slots; ++slot_id) {
+                visibility[teacher_id][student_id][slot_id] =
+                         static_cast<double>(data.teacher_available[teacher_id][slot_id]
+                                             && data.student_available[student_id][slot_id]);
                 // visibilities do not change, so we can exponentiate it right away
                 visibility[teacher_id][student_id][slot_id] = pow(visibility[teacher_id][student_id][slot_id], config.visibility_weight);
             }
@@ -75,11 +86,11 @@ Matrix3D<double> Colony::CalcVisibility() {
 }
 
 Schedule Colony::RunAnt() {
-    Schedule schedule = myaco::CreateSchedule(data.n_teachers, data.week_length);
+    Schedule schedule(data.n_teachers, data.n_slots);
     for (int64_t teacher_id = 0; teacher_id < data.n_teachers; ++teacher_id) {
         for (int64_t student_id = 0; student_id < data.n_students; ++student_id) {
             for (int64_t i = 0; i < data.requirements[teacher_id][student_id]; ++i) {
-                int64_t timeslot_id = SelectTimeslot(teacher_id, student_id);
+                int64_t timeslot_id = SelectTimeslot(teacher_id, student_id, schedule[teacher_id]);
                 schedule[teacher_id][timeslot_id] = student_id;
                 ApplyLocalTrailDecay(teacher_id, student_id, timeslot_id);
             }
@@ -88,15 +99,18 @@ Schedule Colony::RunAnt() {
     return schedule;
 }
 
-int64_t Colony::SelectTimeslot(int64_t teacher_id, int64_t student_id) {
-    std::vector<double> partial_sum_probas(data.week_length);
-    for (int64_t slot_id = 0; slot_id < data.week_length; ++slot_id) {
+int64_t Colony::SelectTimeslot(int64_t teacher_id, int64_t student_id, const Schedule::Row& current_schedule) {
+    std::vector<double> partial_sum_probas(data.n_slots, 0);
+    for (int64_t slot_id = 0; slot_id < data.n_slots; ++slot_id) {
+        if (current_schedule[slot_id].has_value()) {
+            continue;
+        }
+        partial_sum_probas[slot_id] =
+                pow(trail_[teacher_id][student_id][slot_id], config.trail_weight) *
+                visibility_[teacher_id][student_id][slot_id]; // visibilities are already exponentiated
         if (slot_id > 0) {
             partial_sum_probas[slot_id] += partial_sum_probas[slot_id - 1];
         }
-        partial_sum_probas[slot_id] += pow(trail_[teacher_id][student_id][slot_id], config.trail_weight);
-        // visibilities are already exponentiated
-        partial_sum_probas[slot_id] += visibility_[teacher_id][student_id][slot_id];
     }
     double total_sum_probas = partial_sum_probas.back();
     std::uniform_real_distribution<double> unif(0., total_sum_probas);
@@ -108,15 +122,16 @@ void Colony::ApplyLocalTrailDecay(int64_t teacher_id, int64_t student_id, int64_
     trail_[teacher_id][student_id][slot_id] += config.local_decay_rate * config.initial_trail;
 }
 
-IOptimizer* Colony::GetLocalSearcher(const Schedule& schedule) {
-    return new Annealer(schedule);
+IOptimizer* Colony::GetLocalSearcher(Schedule& schedule) {
+    //return new Annealer(std::move(schedule));
+    return nullptr;
 }
 
-void Colony::ApplyLocalSearch(Schedule& schedule) {
+void Colony::ApplyLocalSearch(Schedule& schedule, Timer::fsec max_time = Timer::kInfiniteSeconds) {
     IOptimizer* local_searcher = GetLocalSearcher(schedule);
     if (local_searcher != nullptr) {
-        local_searcher->Run();
-        schedule = local_searcher->GetSchedule();
+        local_searcher->Run(max_time, std::chrono::seconds(1));
+        schedule = std::move(local_searcher->GetSchedule());
         delete local_searcher;
     }
 }
@@ -124,20 +139,21 @@ void Colony::ApplyLocalSearch(Schedule& schedule) {
 void Colony::UpdateTrail() {
     for (int64_t teacher_id = 0; teacher_id < data.n_teachers; ++teacher_id) {
         for (int64_t student_id = 0; student_id < data.n_students; ++student_id) {
-            for (int64_t slot_id = 0; slot_id < data.week_length; ++slot_id) {
+            for (int64_t slot_id = 0; slot_id < data.n_slots; ++slot_id) {
                 trail_[teacher_id][student_id][slot_id] *= (1. - config.evaporation_rate);
                 if (best_schedule_[teacher_id][slot_id] == student_id) {
                     trail_[teacher_id][student_id][slot_id] += config.evaporation_rate
                                                             * config.trail_store_factor
-                                                            / (1 + best_quality_);
+                                                            / (1 + best_schedule_.GetQuality());
                 }
             }
         }
     }
 }
 
-std::vector<Schedule>::const_iterator Colony::SelectBestSchedule(const std::vector<Schedule>& schedules) {
+std::vector<Schedule>::iterator Colony::SelectBestSchedule(std::vector<Schedule>& schedules) {
     std::vector<double> qualities;
+    qualities.reserve(schedules.size());
     for (const Schedule& schedule : schedules) {
         qualities.push_back(CalcScheduleQuality(schedule));
     }
