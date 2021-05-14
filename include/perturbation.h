@@ -9,6 +9,8 @@ class IPerturbator {
 public:
     IPerturbator();
 
+    Schedule::Move GenerateMove(const Schedule& schedule);
+
     virtual std::vector<Schedule::Move> GenerateMoves(const Schedule& schedule) = 0;
 
 protected:

@@ -36,6 +36,8 @@ public:
 
     double GetQuality() const;
 
+    double GetNormalizedQuality() const;
+
     double ApplyMove(Move move);
 
     double ApplyMoves(const std::vector<Move>& moves);

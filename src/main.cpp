@@ -28,28 +28,4 @@ int main(int argc, char** argv) {
         }
         std::cerr << std::endl;
     }
-
-//    for (auto i : opt.GetHistory()) {
-//        std::cerr << i.second << " ";
-//    }
-//    std::cerr << std::endl;
-//
-//    if (argc < 3) {
-//        return 0;
-//    }
-//
-//    std::ofstream out(argv[2]);
-//    auto result = opt.GetSchedule();
-//    out << std::right;
-//    for (auto& row : result) {
-//        for (auto& elem : row) {
-//            out << std::setw(3);
-//            if (elem.has_value()) {
-//                out << elem.value();
-//            } else {
-//                out << "#";
-//            }
-//        }
-//        out << std::endl;
-//    }
 }

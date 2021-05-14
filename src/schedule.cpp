@@ -32,6 +32,10 @@ double Schedule::GetQuality() const {
     return quality_;
 }
 
+double Schedule::GetNormalizedQuality() const {
+    return quality_ / data.n_students;
+}
+
 void Schedule::RecountQuality() {
     count_ = CreateMatrix2D<int64_t>(data.n_students, data.n_slots);
     for (int64_t teacher_id = 0; teacher_id < data.n_teachers; ++teacher_id) {
@@ -44,7 +48,7 @@ void Schedule::RecountQuality() {
     quality_ = 0;
     for (int64_t student_id = 0; student_id < data.n_students; ++student_id) {
         for (int64_t slot_id = 0; slot_id < data.n_slots; ++slot_id) {
-            quality_ += std::max<int64_t>(0, count_[student_id][slot_id] - data.student_available[student_id][slot_id]);
+            quality_ += std::max<int64_t>(0LL, count_[student_id][slot_id] - data.student_available[student_id][slot_id]);
         }
     }
 }
