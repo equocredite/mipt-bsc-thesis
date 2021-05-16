@@ -6,27 +6,25 @@
 #include <thread>
 #include "optimizer.h"
 
-template<typename Optimizer>
+template<typename Optimizer, typename Perturbator = SimplePerturbator>
 class ParallelRunner {
 public:
-    explicit ParallelRunner(uint32_t n_threads = std::thread::hardware_concurrency() - 1,
-                            IPerturbator* perturbator = new SimplePerturbator())
-            : n_threads_(n_threads)
-            , perturbator_(perturbator) {
+    explicit ParallelRunner(uint32_t n_threads = std::thread::hardware_concurrency() - 1)
+            : n_threads_(n_threads) {
         optimizers_.reserve(n_threads_);
     }
 
     void InitSchedules(const Schedule& initial_schedule) {
         for (uint32_t i = 0; i < n_threads_; ++i) {
             Schedule schedule = initial_schedule;
-            optimizers_.emplace_back(Optimizer(std::move(schedule), perturbator_));
+            optimizers_.emplace_back(Optimizer(std::move(schedule), new Perturbator()));
         }
     }
 
     void InitSchedules(std::vector<Schedule>& initial_schedules) {
         assert(initial_schedules.size() == n_threads_);
         for (uint32_t i = 0; i < n_threads_; ++i) {
-            optimizers_.emplace_back(Optimizer(std::move(initial_schedules[i])));
+            optimizers_.emplace_back(Optimizer(std::move(initial_schedules[i]), new Perturbator()));
         }
     }
 

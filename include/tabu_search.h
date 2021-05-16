@@ -6,7 +6,7 @@
 
 class TabuSearcher : public LocalSearcher {
 public:
-    explicit TabuSearcher(Schedule&& initial_schedule, IPerturbator* perturbator);
+    explicit TabuSearcher(Schedule&& initial_schedule, IPerturbator* perturbator = new SimplePerturbator());
 
     void Run(Timer::fsec max_time, Timer::fsec log_frequency) override;
 

@@ -36,13 +36,13 @@ std::vector<Schedule::Move> Torquer::GenerateMoves(const Schedule& schedule) {
     int64_t slot_y = basic_move.slot_y;
 
     // list of rows that have a specific student in either slot_x or slot_y
-    auto adj_list = CreateMatrix3D<int32_t>(2, data.n_students, 0);
+    auto adj_list = CreateMatrix3D<int64_t>(2, data.n_students, 0);
     for (int64_t i = 0; i < data.n_teachers; ++i) {
         if (schedule[i][slot_x].has_value()) {
             adj_list[0][schedule[i][slot_x].value()].push_back(i);
         }
         if (schedule[i][slot_y].has_value()) {
-            adj_list[0][schedule[i][slot_x].value()].push_back(i);
+            adj_list[1][schedule[i][slot_y].value()].push_back(i);
         }
     }
 

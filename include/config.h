@@ -27,7 +27,6 @@ struct Config {
     double trail_weight = 1.;
     double visibility_weight = 1.;
 
-    //int64_t n_iterations_sa = 200;
     double sa_initial_temperature = 100;
     double sa_cooling_rate = 0.9999;
     int64_t sa_max_idle_iterations = std::numeric_limits<int64_t>::max();
