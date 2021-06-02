@@ -30,6 +30,10 @@ public:
 
     explicit Schedule(Table&& table);
 
+    Table& GetTable();
+
+    static Table CreateTable(int64_t n, int64_t k);
+
     Row& operator [](int64_t i);
 
     const Row& operator [](int64_t i) const;

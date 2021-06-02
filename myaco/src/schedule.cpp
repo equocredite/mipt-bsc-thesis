@@ -10,6 +10,14 @@ Schedule::Schedule(int64_t n, int64_t k)
     RecountQuality();
 }
 
+Schedule::Table& Schedule::GetTable() {
+    return table_;
+}
+
+Schedule::Table Schedule::CreateTable(int64_t n, int64_t k) {
+    return CreateMatrix2D<std::optional<int64_t>>(n, k);
+}
+
 Schedule::Row& Schedule::operator[](int64_t i) {
     return table_[i];
 }
@@ -33,7 +41,7 @@ double Schedule::GetQuality() const {
 }
 
 double Schedule::GetNormalizedQuality() const {
-    return quality_ / data.n_students;
+    return quality_ / data.total_requirements;
 }
 
 void Schedule::RecountQuality() {
@@ -115,6 +123,8 @@ std::vector<Schedule::Row>::iterator Schedule::begin() {
 std::vector<Schedule::Row>::iterator Schedule::end() {
     return table_.end();
 }
+
+
 
 
 

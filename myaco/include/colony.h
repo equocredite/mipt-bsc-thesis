@@ -9,9 +9,9 @@
 
 class Colony {
 public:
-    Colony();
+    Colony() = delete;
 
-    explicit Colony(Schedule initial_schedule);
+    explicit Colony(Schedule initial_schedule, const Matrix3D<double>& visibility);
 
     void MakeIteration(Timer::fsec max_time);
 
@@ -28,8 +28,6 @@ public:
     void SetTrail(Matrix3D<double>);
 
 private:
-    static Matrix3D<double> CalcVisibility();
-
     void InitTrail();
 
     Schedule RunAnt();
@@ -49,7 +47,7 @@ private:
     static double CalcScheduleQuality(const Schedule& schedule);
 
     Matrix3D<double> trail_;
-    const Matrix3D<double> visibility_;
+    const Matrix3D<double>& visibility_;
     std::mt19937 rng_;
 
     Schedule best_schedule_;

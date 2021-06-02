@@ -1,9 +1,7 @@
 #include "ortools/linear_solver/linear_solver.h"
-#include "matrix.h"
 
 namespace operations_research {
 void BasicExample() {
-    auto mat = myaco::CreateMatrix2D<int>(5, 5);
     // Create the linear solver with the GLOP backend.
     std::unique_ptr<MPSolver> solver(MPSolver::CreateSolver("GLOP"));
 
@@ -35,7 +33,9 @@ void BasicExample() {
 }
 }  // namespace operations_research
 
-int main() {
+int main(int argc, char** argv) {
+    LOG(INFO) << argv[1] << std::endl;
+    return 0;
     operations_research::BasicExample();
     return EXIT_SUCCESS;
 }

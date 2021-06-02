@@ -14,8 +14,9 @@ LocalSearcher::LocalSearcher(Schedule&& schedule, IPerturbator* perturbator = ne
 Schedule& LocalSearcher::GetSchedule() {
     return best_schedule_;
 }
-
+#include <iostream>
 void LocalSearcher::Log(Timer& timer) {
+    std::cout << best_schedule_.GetQuality() << std::endl;
     history_.emplace_back(timer.TimeElapsed(), best_schedule_.GetQuality());
 }
 

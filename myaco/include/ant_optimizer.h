@@ -13,10 +13,16 @@ public:
 
     void Run(Timer::fsec max_time, Timer::fsec log_frequency) override;
 
+    void Run(Timer::fsec max_time, Timer::fsec log_frequency, Timer::fsec sync_frequency);
+
     Schedule& GetSchedule() override;
 
-private:
     static Schedule CreateInitialSchedule();
+
+private:
+    static Matrix3D<double> CalcVisibility();
+
+    Matrix3D<double> visibility;
 
     void SyncColonies();
 

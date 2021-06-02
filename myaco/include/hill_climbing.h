@@ -5,7 +5,7 @@
 
 class HillClimber : public LocalSearcher {
 public:
-    explicit HillClimber(Schedule&& initial_schedule, IPerturbator* perturbator);
+    explicit HillClimber(Schedule&& initial_schedule, IPerturbator* perturbator = new SimplePerturbator());
 
     void Run(Timer::fsec max_time, Timer::fsec log_frequency) override;
 };

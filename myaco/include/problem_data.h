@@ -13,6 +13,10 @@ struct ProblemData {
     int64_t n_teachers{};
     int64_t n_students{};
     int64_t n_slots{};
+    int64_t total_requirements;
+    double teacher_availability_factor;
+    double student_availability_factor;
+    double distribution_factor;
     Matrix2D<int64_t> requirements;
     Matrix2D<int64_t> teacher_available;
     Matrix2D<int64_t> student_available;

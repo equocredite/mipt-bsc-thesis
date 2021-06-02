@@ -7,7 +7,11 @@
 using namespace myaco;
 
 ProblemData ProblemDataReader::ReadFromStream(std::istream& in) {
-    in >> data.n_teachers >> data.n_students >> data.n_slots;
+    ProblemData data;
+
+    in >> data.n_teachers >> data.n_students >> data.n_slots
+       >> data.teacher_availability_factor >> data.student_availability_factor >> data.distribution_factor;
+
     if (std::min({data.n_teachers, data.n_students, data.n_slots}) <= 0) {
         throw std::domain_error("all principal parameters must be positive");
     }
@@ -23,6 +27,7 @@ ProblemData ProblemDataReader::ReadFromStream(std::istream& in) {
             if (data.requirements[i][j] < 0) {
                 throw std::domain_error("requirements should be non-negative");
             }
+            data.total_requirements += data.requirements[i][j];
         }
     }
 

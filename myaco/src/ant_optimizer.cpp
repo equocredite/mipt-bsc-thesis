@@ -10,11 +10,15 @@ AntOptimizer::AntOptimizer()
 }
 
 AntOptimizer::AntOptimizer(const Schedule& initial_schedule)
-        : colonies_(config.aco_n_colonies, Colony(initial_schedule))
+        : colonies_(config.aco_n_colonies, Colony(initial_schedule, visibility = CalcVisibility()))
         , best_quality_(initial_schedule.GetQuality()) {
 }
 
 void AntOptimizer::Run(Timer::fsec max_time, Timer::fsec log_frequency) {
+    Run(max_time, log_frequency, 0.5s);
+}
+
+void AntOptimizer::Run(Timer::fsec max_time, Timer::fsec log_frequency, Timer::fsec sync_frequency) {
     Timer timer(max_time);
     while (!timer.Expired()) {
         if (timer.Tick(log_frequency)) {
@@ -22,7 +26,7 @@ void AntOptimizer::Run(Timer::fsec max_time, Timer::fsec log_frequency) {
         }
         std::vector<std::thread> threads;
         for (Colony& colony : colonies_) {
-            threads.emplace_back(std::thread(&Colony::Run, std::ref(colony), config.aco_sync_frequency));
+            threads.emplace_back(std::thread(&Colony::Run, std::ref(colony), sync_frequency));
         }
         for (auto& thread : threads) {
             thread.join();
@@ -71,4 +75,25 @@ Schedule AntOptimizer::CreateInitialSchedule() {
         }
     }
     return Schedule(table);
+}
+
+Matrix3D<double> AntOptimizer::CalcVisibility() {
+    auto visibility = myaco::CreateMatrix3D<double>(data.n_teachers, data.n_students, data.n_slots);
+    for (int64_t teacher_id = 0; teacher_id < data.n_teachers; ++teacher_id) {
+        for (int64_t student_id = 0; student_id < data.n_students; ++student_id) {
+            if (data.requirements[teacher_id][student_id] == 0) {
+                continue;
+            }
+            for (int64_t slot_id = 0; slot_id < data.n_slots; ++slot_id) {
+                if (!data.teacher_available[teacher_id][slot_id] || !data.student_available[student_id][slot_id]) {
+                    continue;
+                }
+                visibility[teacher_id][student_id][slot_id] =
+                        static_cast<double>(data.requirements[teacher_id][student_id]);
+                // visibilities do not change, so we can exponentiate it right away
+                visibility[teacher_id][student_id][slot_id] = pow(visibility[teacher_id][student_id][slot_id], config.visibility_weight);
+            }
+        }
+    }
+    return visibility;
 }
